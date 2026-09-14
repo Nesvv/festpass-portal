@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FestPass | College Fest & Hackathon Booking Portal with QR Tickets</title>
+
+  <!-- Google Fonts: Space Grotesk, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- QRCode.js Library CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================== -->
+  <!-- TOP NAVBAR -->
+  <!-- ============================================== -->
+  <header class="navbar-wrapper">
+    <nav class="navbar container">
+      <!-- Brand Logo -->
+      <a href="#" class="brand-logo">
+        <div class="logo-icon"><i class="fa-solid fa-ticket"></i></div>
+        <div class="logo-text">Fest<span>Pass</span></div>
+      </a>
+
+      <!-- Search Bar -->
+      <div class="nav-search-bar">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="eventSearchInput" placeholder="Search hackathons, EDM night, college fests..." />
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="nav-actions">
+        <!-- My Booked Tickets -->
+        <button class="btn-nav" id="myTicketsBtn" title="View Booked Passes">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>My Tickets</span>
+          <span class="ticket-badge" id="bookedTicketsCount">0</span>
+        </button>
+
+        <!-- Organizer Check-in Station -->
+        <button class="btn-nav btn-organizer" id="gateStationBtn" title="Organizer Gatekeeper Check-In">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Gate Scanner</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ============================================== -->
+  <!-- HERO BANNER -->
+  <!-- ============================================== -->
+  <section class="hero-banner">
+    <div class="container hero-content">
+      <span class="hero-tag"><i class="fa-solid fa-fire"></i> MUMBAI UNIVERSITY &amp; INTER-COLLEGE FESTS 2026</span>
+      <h1 class="hero-title">Your Gateway to College Fests, <span class="gradient-text">Hackathons &amp; Concerts</span></h1>
+      <p class="hero-subtitle">
+        Book your entry in seconds. Get instant digital event passes with <strong>scannable QR Codes</strong>. Zero paper, zero queues, instant gate check-ins.
+      </p>
+
+      <!-- Trust Metrics Strip -->
+      <div class="hero-stats">
+        <div class="stat-pill">
+          <i class="fa-solid fa-laptop-code text-cyan"></i>
+          <span>24H Hackathons</span>
+        </div>
+        <div class="stat-pill">
+          <i class="fa-solid fa-music text-purple"></i>
+          <span>Battle of Bands &amp; EDM</span>
+        </div>
+        <div class="stat-pill">
+          <i class="fa-solid fa-qrcode text-green"></i>
+          <span>Instant QR Code Passes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================== -->
+  <!-- EVENT CATALOG SECTION -->
+  <!-- ============================================== -->
+  <main class="container catalog-section" id="eventsCatalog">
+    <!-- Filter Chips Toolbar -->
+    <div class="toolbar-wrapper">
+      <div class="category-filters" id="categoryFilters">
+        <button class="cat-pill active" data-category="all">All Events</button>
+        <button class="cat-pill" data-category="hackathons">Hackathons</button>
+        <button class="cat-pill" data-category="cultural">Cultural &amp; EDM</button>
+        <button class="cat-pill" data-category="gaming">Esports &amp; Gaming</button>
+        <button class="cat-pill" data-category="tech">RoboWars &amp; Tech</button>
+        <button class="cat-pill" data-category="workshops">Workshops</button>
+      </div>
+
+      <div class="catalog-counter" id="catalogResultsCount">
+        Showing 6 Events
+      </div>
+    </div>
+
+    <!-- Event Cards Grid -->
+    <div class="events-grid" id="eventsGrid">
+      <!-- Rendered dynamically by app.js -->
+    </div>
+  </main>
+
+  <!-- ============================================== -->
+  <!-- TICKET BOOKING REGISTRATION MODAL -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal-card booking-modal-card">
+      <button class="modal-close-btn" id="closeBookingBtn"><i class="fa-solid fa-xmark"></i></button>
+
+      <div class="modal-header">
+        <span class="modal-tag" id="bookingEventTag">Hackathon</span>
+        <h2 id="bookingEventTitle">HackMumbai 2026</h2>
+        <p class="modal-sub" id="bookingEventVenue"><i class="fa-solid fa-location-dot"></i> University of Mumbai Campus</p>
+      </div>
+
+      <form id="bookingForm" class="booking-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="attName">Full Name *</label>
+            <input type="text" id="attName" placeholder="Saurabh Virkar" required />
+          </div>
+          <div class="form-group">
+            <label for="attCollege">College / Institute *</label>
+            <input type="text" id="attCollege" placeholder="University of Mumbai" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="attDept">Department &amp; Year *</label>
+            <input type="text" id="attDept" placeholder="Computer Engineering, 2nd Year" required />
+          </div>
+          <div class="form-group">
+            <label for="attPassCount">Number of Passes *</label>
+            <select id="attPassCount">
+              <option value="1">1 Pass</option>
+              <option value="2">2 Passes</option>
+              <option value="3">3 Passes</option>
+              <option value="4">4 Passes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="attEmail">Email Address *</label>
+            <input type="email" id="attEmail" placeholder="saurabh@example.com" required />
+          </div>
+          <div class="form-group">
+            <label for="attPhone">WhatsApp / Mobile *</label>
+            <input type="tel" id="attPhone" placeholder="9876543210" pattern="[0-9]{10}" required />
+          </div>
+        </div>
+
+        <div class="price-summary-box">
+          <div class="summary-line">
+            <span>Pass Pricing:</span>
+            <strong id="bookingPassPrice">FREE</strong>
+          </div>
+          <div class="summary-line total-line">
+            <span>Total Payable:</span>
+            <strong id="bookingTotalPrice" class="text-green">₹0 (Free Entry)</strong>
+          </div>
+        </div>
+
+        <button type="submit" id="confirmBookingBtn" class="btn btn-primary btn-block">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>Confirm &amp; Generate QR Pass</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- DIGITAL QR CODE TICKET PASS MODAL -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="ticketPassModal">
+    <div class="modal-card ticket-pass-card">
+      <button class="modal-close-btn" id="closePassBtn"><i class="fa-solid fa-xmark"></i></button>
+
+      <!-- Realistic Perforated Ticket Pass -->
+      <div class="ticket-wrapper" id="printableTicket">
+        <!-- Ticket Top / Header -->
+        <div class="ticket-header">
+          <div class="ticket-brand">
+            <i class="fa-solid fa-ticket"></i>
+            <span>FestPass Official Campus Pass</span>
+          </div>
+          <span class="ticket-status-pill" id="ticketStatusPill">CONFIRMED</span>
+        </div>
+
+        <!-- Ticket Body -->
+        <div class="ticket-body">
+          <div class="ticket-event-info">
+            <span class="ticket-event-cat" id="tEventCat">HACKATHON</span>
+            <h2 class="ticket-event-title" id="tEventTitle">HackMumbai 2026 — 24H Hackathon</h2>
+            
+            <div class="ticket-meta-grid">
+              <div>
+                <span class="t-label">Date &amp; Time</span>
+                <strong class="t-value" id="tEventDate">March 28, 2026 &bull; 09:00 AM</strong>
+              </div>
+              <div>
+                <span class="t-label">Venue</span>
+                <strong class="t-value" id="tEventVenue">Kalina Campus Auditorium</strong>
+              </div>
+            </div>
+
+            <div class="ticket-attendee-info">
+              <div>
+                <span class="t-label">Pass Holder</span>
+                <strong class="t-value highlight" id="tAttendeeName">Saurabh Bapu Virkar</strong>
+              </div>
+              <div>
+                <span class="t-label">College / Dept</span>
+                <strong class="t-value" id="tAttendeeCollege">University of Mumbai</strong>
+              </div>
+              <div>
+                <span class="t-label">Passes</span>
+                <strong class="t-value" id="tPassCount">1 Person</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Perforated Line with Cutout Notches -->
+          <div class="ticket-perforation">
+            <div class="notch notch-left"></div>
+            <div class="perforated-dashed-line"></div>
+            <div class="notch notch-right"></div>
+          </div>
+
+          <!-- Ticket QR Stub (Right Side) -->
+          <div class="ticket-qr-stub">
+            <div class="qr-code-box" id="ticketQRCodeContainer">
+              <!-- Rendered by qrcode.js -->
+            </div>
+            <span class="qr-label">SCAN AT ENTRANCE</span>
+            <div class="ticket-id-badge" id="tTicketId">#FP-2026-98124</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ticket Actions -->
+      <div class="ticket-actions">
+        <button class="btn btn-secondary" onclick="window.print()">
+          <i class="fa-solid fa-print"></i>
+          <span>Print / Save PDF</span>
+        </button>
+        <button class="btn btn-primary" id="doneTicketBtn">
+          <i class="fa-solid fa-check"></i>
+          <span>Done</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- ORGANIZER GATEKEEPER CHECK-IN MODAL -->
+  <!-- ============================================== -->
+  <div class="modal-overlay" id="gatekeeperModal">
+    <div class="modal-card gatekeeper-card">
+      <button class="modal-close-btn" id="closeGateBtn"><i class="fa-solid fa-xmark"></i></button>
+
+      <div class="gate-header">
+        <div class="gate-badge"><i class="fa-solid fa-shield-halved"></i> Gatekeeper Check-In Station</div>
+        <h2>Scan &amp; Verify Event Passes</h2>
+        <p>Enter or scan attendee Ticket ID to validate access at the entrance.</p>
+      </div>
+
+      <div class="gate-scanner-box">
+        <div class="scanner-input-group">
+          <i class="fa-solid fa-barcode barcode-icon"></i>
+          <input type="text" id="scanTicketInput" placeholder="Enter Ticket ID (e.g. FP-2026-98124)" />
+          <button id="verifyTicketBtn" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i>
+            <span>Verify Entry</span>
+          </button>
+        </div>
+
+        <!-- Verification Result Banner -->
+        <div id="scanResultAlert" class="scan-result-alert hidden">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Quick Demo Shortcut -->
+      <div class="quick-demo-shortcut">
+        <span>💡 Demo Tip:</span>
+        <button id="fillSampleTicketBtn" class="btn-link">Auto-fill latest booked ticket ID</button>
+      </div>
+
+      <!-- Verified Attendees History -->
+      <div class="gate-history-section">
+        <h3><i class="fa-solid fa-list-check"></i> Recently Checked-In Attendees</h3>
+        <div class="gate-history-list" id="checkedInHistoryList">
+          <p class="empty-history">No attendees checked in yet today.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- "MY TICKETS" SLIDE-OVER DRAWER -->
+  <!-- ============================================== -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="tickets-drawer" id="ticketsDrawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <i class="fa-solid fa-ticket text-cyan"></i>
+        <h3>My Booked Passes</h3>
+      </div>
+      <button class="btn-close-drawer" id="closeDrawerBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="drawer-body" id="myTicketsList">
+      <!-- Populated dynamically -->
+    </div>
+  </aside>
+
+  <!-- ============================================== -->
+  <!-- FOOTER -->
+  <!-- ============================================== -->
+  <footer class="portal-footer">
+    <div class="container footer-content">
+      <div class="footer-left">
+        <div class="brand-logo">
+          <div class="logo-icon"><i class="fa-solid fa-ticket"></i></div>
+          <div class="logo-text">Fest<span>Pass</span></div>
+        </div>
+        <p>College Fest &amp; Hackathon Digital Pass Management Portal. Eliminating paper passes with authentic client-side QR verification.</p>
+      </div>
+
+      <div class="footer-right">
+        <p><strong>Developed by:</strong> Saurabh Bapu Virkar</p>
+        <p>2nd Year Computer Engineering &bull; University of Mumbai</p>
+        <p><a href="https://github.com/Nesvv" target="_blank"><i class="fa-brands fa-github"></i> github.com/Nesvv</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="events.js"></script>
+  <script src="ticket-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
